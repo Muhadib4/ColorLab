@@ -1,0 +1,20 @@
+"use client";
+import { Monitor, Moon, Sun, Volume2, Waves, Sparkles, Palette, Play, Pause, VolumeX } from "lucide-react";
+import type { AppSettings } from "@/types";
+import { Dialog } from "./dialog";
+
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (value: boolean) => void; label: string }) {
+  return <button type="button" role="switch" aria-checked={checked} aria-label={label} className={`toggle ${checked ? "is-on" : ""}`} onClick={() => onChange(!checked)}><span /></button>;
+}
+export default function Settings({ settings, onChange, onClose, ambientPlaying, onAmbient }: { settings: AppSettings; onChange: (settings: AppSettings) => void; onClose: () => void; ambientPlaying: boolean; onAmbient: () => void }) {
+  const set = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => onChange({ ...settings, [key]: value });
+  return <Dialog title="Make yourself at home." subtitle="A few little things to make this space yours." onClose={onClose} className="settings-dialog">
+    <div className="settings-section"><h3><Sun size={16} /> Appearance</h3><div className="theme-options">{([{ value: "light", label: "Light", icon: Sun }, { value: "dark", label: "Dark", icon: Moon }, { value: "system", label: "System", icon: Monitor }] as const).map(({ value, label, icon: Icon }) => <button className={`theme-option ${settings.theme === value ? "selected" : ""}`} key={value} onClick={() => set("theme", value)} aria-pressed={settings.theme === value}><Icon size={21} /><span>{label}</span></button>)}</div></div>
+    <div className="settings-section"><h3><Volume2 size={16} /> Studio sound</h3><div className="setting-row"><div><strong>Interface sounds</strong><p>A gentle note for your next good idea.</p></div><Toggle checked={settings.sfx} onChange={v => set("sfx", v)} label="Interface sounds" /></div><label className="volume-row"><span>SFX volume</span><input type="range" min="0" max="1" step="0.01" value={settings.sfxVolume} onChange={e => set("sfxVolume", Number(e.target.value))} /><span className="mono">{Math.round(settings.sfxVolume * 100)}%</span></label>
+      <div className="setting-row"><div><strong>Ambient atmosphere</strong><p>A soft, procedural synth chord. Off by default.</p></div><button className="icon-button ambient-play" aria-label={ambientPlaying ? "Pause ambient audio" : "Play ambient audio"} aria-pressed={ambientPlaying} onClick={onAmbient}>{ambientPlaying ? <Pause size={18} /> : <Play size={18} />}</button></div><label className="volume-row"><span>Ambient volume</span><input type="range" min="0" max="1" step="0.01" value={settings.ambientVolume} onChange={e => set("ambientVolume", Number(e.target.value))} /><span className="mono">{Math.round(settings.ambientVolume * 100)}%</span></label>
+      <div className="setting-row"><div><strong className="inline-label"><VolumeX size={14} /> Mute all audio</strong><p>Keep your volume levels for later.</p></div><Toggle checked={settings.muted} onChange={v => set("muted", v)} label="Mute all audio" /></div>
+    </div>
+    <div className="settings-section"><h3><Sparkles size={16} /> Motion & color</h3><div className="setting-row"><div><strong>Motion</strong><p>Your system’s reduced motion setting is always respected.</p></div><select className="select" aria-label="Motion preference" value={settings.motion} onChange={e => set("motion", e.target.value as AppSettings["motion"])}><option value="full">Full</option><option value="reduced">Reduced</option></select></div><div className="setting-row"><div><strong className="inline-label"><Palette size={14} /> Preferred color format</strong><p>Used when copying with the C shortcut.</p></div><select className="select" aria-label="Preferred color format" value={settings.format} onChange={e => set("format", e.target.value as AppSettings["format"])}>{["HEX", "RGB", "HSL"].map(f => <option key={f}>{f}</option>)}</select></div></div>
+    <div className="dialog-note"><Waves size={15} /> Preferences are saved automatically on this device.</div>
+  </Dialog>;
+}

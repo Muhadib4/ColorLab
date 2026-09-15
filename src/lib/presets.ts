@@ -1,0 +1,39 @@
+import type { GradientPreset } from "../types";
+
+export const GRADIENT_PRESETS: GradientPreset[] = [
+  { name: "Aurora", category: "Aurora", colors: ["#6D28D9", "#8B5CF6", "#38BDF8"], angle: 135 },
+  { name: "Golden hour", category: "Sunset", colors: ["#F87171", "#FB923C", "#FDE68A"], angle: 135 },
+  { name: "Deep ocean", category: "Ocean", colors: ["#164E63", "#0891B2", "#67E8F9"], angle: 135 },
+  { name: "Cyber bloom", category: "Cyber", colors: ["#9333EA", "#DB2777", "#F472B6"], angle: 135 },
+  { name: "Soft dream", category: "Pastel", colors: ["#A5B4FC", "#DDD6FE", "#FBCFE8"], angle: 120 },
+  { name: "Solar flare", category: "Fire", colors: ["#991B1B", "#EA580C", "#FACC15"], angle: 45 },
+  { name: "Moss & mist", category: "Forest", colors: ["#14532D", "#4D7C0F", "#BEF264"], angle: 135 },
+  { name: "Lavender haze", category: "Lavender", colors: ["#6D28D9", "#A78BFA", "#E9D5FF"], angle: 135 },
+  { name: "After hours", category: "Midnight", colors: ["#0F172A", "#312E81", "#6D28D9"], angle: 135 },
+  { name: "Neon pulse", category: "Neon", colors: ["#7C3AED", "#EC4899", "#A3E635"], angle: 120 },
+  { name: "Candy shop", category: "Candy", colors: ["#F472B6", "#C084FC", "#67E8F9"], angle: 135 },
+  { name: "Ice crystal", category: "Ice", colors: ["#BAE6FD", "#E0F2FE", "#F0FDFA"], angle: 135 },
+  { name: "Peach sorbet", category: "Peach", colors: ["#FB7185", "#FDBA74", "#FFEDD5"], angle: 120 },
+  { name: "Liquid gold", category: "Gold", colors: ["#92400E", "#D97706", "#FDE68A"], angle: 45 },
+  { name: "Night drive", category: "Synthwave", colors: ["#312E81", "#7C3AED", "#F472B6"], angle: 135 },
+  { name: "Arctic dawn", category: "Arctic", colors: ["#155E75", "#22D3EE", "#CCFBF1"], angle: 135 },
+  { name: "Sakura", category: "Sakura", colors: ["#F9A8D4", "#FBCFE8", "#FFF1F2"], angle: 135 },
+  { name: "Northern lights", category: "Aurora", colors: ["#312E81", "#0D9488", "#A7F3D0"], angle: 45 },
+  { name: "Blue hour", category: "Ocean", colors: ["#1E3A8A", "#3B82F6", "#A5F3FC"], angle: 120 },
+  { name: "Electric dusk", category: "Cyber", colors: ["#2563EB", "#A855F7", "#F43F5E"], angle: 135 },
+  { name: "Apricot skies", category: "Sunset", colors: ["#A78BFA", "#FB7185", "#FED7AA"], angle: 135 },
+  { name: "Velvet night", category: "Midnight", colors: ["#18181B", "#581C87", "#9D174D"], angle: 120 },
+  { name: "Matcha cloud", category: "Forest", colors: ["#4D7C0F", "#A3BE8C", "#ECFCCB"], angle: 135 },
+  { name: "Moonstone", category: "Pastel", colors: ["#C7D2FE", "#BAE6FD", "#CCFBF1"], angle: 135 },
+];
+
+export const PALETTE_PRESETS: { name: string; colors: string[]; tag: string }[] = [
+  { name: "Creative current", colors: ["#4F46E5", "#8B5CF6", "#C4B5FD", "#F0ABFC", "#FBCFE8"], tag: "Dreamy" },
+  { name: "Coastal morning", colors: ["#164E63", "#0891B2", "#67E8F9", "#CFFAFE", "#FEF3C7"], tag: "Fresh" },
+  { name: "Soft earth", colors: ["#57534E", "#78716C", "#A8A29E", "#D6CCC2", "#F5EBE0"], tag: "Minimal" },
+  { name: "Desert bloom", colors: ["#9F1239", "#E11D48", "#FB7185", "#FDBA74", "#FEF3C7"], tag: "Warm" },
+  { name: "Freshly picked", colors: ["#14532D", "#15803D", "#4ADE80", "#BEF264", "#ECFCCB"], tag: "Nature" },
+  { name: "Late night", colors: ["#0F172A", "#1E293B", "#334155", "#6366F1", "#A5B4FC"], tag: "Dark" },
+  { name: "Sugar rush", colors: ["#F472B6", "#FB923C", "#FDE047", "#86EFAC", "#93C5FD"], tag: "Playful" },
+  { name: "Modern muse", colors: ["#18181B", "#52525B", "#D4D4D8", "#FAFAFA", "#A3E635"], tag: "Bold" },
+];
