@@ -7,7 +7,7 @@ A browser-based color studio for building palettes, exploring color relationship
 ### ColorLab
 
 - Generate palettes with 14 modes: Random, Monochromatic, Analogous, Complementary, Split Complementary, Triadic, Tetradic, Warm, Cool, Pastel, Vibrant, Muted, Dark, and Light.
-- Work with 3–8 colors. Lock favorites while regenerating, edit HEX values, reorder, duplicate, or remove colors.
+- Work with preset palette sizes or a custom 3–24 colors. Lock favorites while regenerating, edit HEX values, reorder, duplicate, or remove colors.
 - Copy HEX, RGB, and HSL values; inspect HSV, relative luminance, and approximate color names.
 - Explore 11-step shades, tints, and tones.
 - Check foreground/background contrast against WCAG AA and AAA thresholds for normal text.

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ArrowDownToLine, ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, Diamond, Eye, Layers3, LockKeyhole, Plus, SlidersHorizontal, Sparkles, Trash2, UnlockKeyhole, X } from "lucide-react";
 import type { Color, ColorFormat, CopyValue, Notify, Palette, PaletteMode } from "@/types";
-import { PALETTE_MODES, colorName, colorScale, contrastRatio, formatColor, generatePalette, hexToHsv, luminance, normalizeHex, textColor, uid } from "@/lib/color";
+import { MAX_PALETTE_COLORS, MIN_PALETTE_COLORS, PALETTE_COLOR_OPTIONS, PALETTE_MODES, colorName, colorScale, contrastRatio, formatColor, generatePalette, hexToHsv, luminance, normalizeHex, textColor, uid } from "@/lib/color";
 import "./colorlab.css";
 
 interface ColorLabProps {
@@ -85,7 +85,7 @@ function ColorInspector({ color, palette, onChange, onClose, copy, notify }: {
       <div className="cl-detail-tools">
         <button className={`button button-ghost ${color.locked ? "cl-is-locked" : ""}`} aria-pressed={color.locked} onClick={() => { update({ locked: !color.locked }); notify(color.locked ? "Color unlocked" : "Color locked"); }}>{color.locked ? <LockKeyhole size={15} /> : <UnlockKeyhole size={15} />}{color.locked ? "Locked" : "Lock color"}</button>
         <button className="button button-ghost" onClick={() => void copy(color.hex, "HEX copied")}><Copy size={15} />Copy HEX</button>
-        <button className="button button-ghost" disabled={palette.colors.length >= 8} onClick={() => {
+        <button className="button button-ghost" disabled={palette.colors.length >= MAX_PALETTE_COLORS} onClick={() => {
           const colors = [...palette.colors]; colors.splice(index + 1, 0, { ...color, id: uid(), locked: false }); onChange({ ...palette, colors }); notify("Color duplicated");
         }}><Layers3 size={15} />Duplicate</button>
         <button className="button button-ghost cl-delete" disabled={palette.colors.length <= 3} onClick={() => { onChange({ ...palette, colors: palette.colors.filter(item => item.id !== color.id) }); onClose(); notify("Color removed"); }}><Trash2 size={15} />Remove</button>
@@ -113,13 +113,19 @@ function ColorInspector({ color, palette, onChange, onClose, copy, notify }: {
 
 export default function ColorLab({ palette, onChange, onGenerate, onSave, onExport, onSendToGradient, copy, notify, format, selectedId, onSelect }: ColorLabProps) {
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
+  const [customCount, setCustomCount] = useState<string | null>(null);
+  const [isCustomCount, setIsCustomCount] = useState(false);
   const [copiedColor, setCopiedColor] = useState<{ id: string; format: ColorFormat } | null>(null);
   const copyFeedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clampCount = (value: number) => Math.min(MAX_PALETTE_COLORS, Math.max(MIN_PALETTE_COLORS, Number.isFinite(value) ? Math.round(value) : MIN_PALETTE_COLORS));
   useEffect(() => () => { if (copyFeedbackTimeout.current) clearTimeout(copyFeedbackTimeout.current); }, []);
   const selected = palette.colors.find(color => color.id === selectedId);
   const checked = palette.colors.filter(color => checkedIds.includes(color.id));
   const lockedCount = palette.colors.filter(color => color.locked).length;
   const selectionCount = checked.length;
+  const countIsPreset = PALETTE_COLOR_OPTIONS.includes(palette.colors.length as typeof PALETTE_COLOR_OPTIONS[number]);
+  const countValue = isCustomCount || !countIsPreset ? "custom" : String(palette.colors.length);
+  const customCountValue = customCount ?? String(palette.colors.length);
   const updateColor = (id: string, patch: Partial<Color>) => onChange({ ...palette, colors: palette.colors.map(color => color.id === id ? { ...color, ...patch } : color) });
   const copyColor = async (color: Color, colorFormat: ColorFormat) => {
     try {
@@ -139,18 +145,19 @@ export default function ColorLab({ palette, onChange, onGenerate, onSave, onExpo
     onChange({ ...palette, colors });
   };
   const changeCount = (count: number) => {
-    const colors = generatePalette(count, palette.mode, palette.colors.map(color => ({ ...color, locked: true }))).map((color, index) => ({ ...color, locked: palette.colors[index]?.locked ?? false }));
+    const nextCount = clampCount(count);
+    const colors = generatePalette(nextCount, palette.mode, palette.colors.map(color => ({ ...color, locked: true }))).map((color, index) => ({ ...color, locked: palette.colors[index]?.locked ?? false }));
     onChange({ ...palette, colors });
   };
 
   return <div className="cl-workspace">
     <div className="cl-workspace-heading"><div className="cl-heading-label"><span className="cl-live-dot" /><h2>Your palette</h2><span className="cl-color-count mono">{palette.colors.length} colors</span></div><div className="cl-heading-actions"><button className="button button-ghost" onClick={onSave}><Plus size={15} />Save palette</button><button className="button button-ghost" onClick={onExport}><ArrowDownToLine size={15} />Export</button></div></div>
     <div className="cl-toolbar">
-      <div className="cl-generator-options"><label className="cl-mode-control"><SlidersHorizontal size={15} /><span className="sr-only">Palette generation mode</span><select className="select" aria-label="Palette generation mode" value={palette.mode} onChange={event => onChange({ ...palette, mode: event.target.value as PaletteMode })}>{PALETTE_MODES.map(mode => <option key={mode} value={mode}>{mode}</option>)}</select></label><span className="cl-toolbar-divider" /><label className="cl-count-control"><span className="sr-only">Number of colors</span><select className="select" aria-label="Number of colors" value={palette.colors.length} onChange={event => changeCount(Number(event.target.value))}>{[3, 4, 5, 6, 7, 8].map(count => <option key={count} value={count}>{count} colors</option>)}</select></label></div>
+      <div className="cl-generator-options"><label className="cl-mode-control"><SlidersHorizontal size={15} /><span className="sr-only">Palette generation mode</span><select className="select" aria-label="Palette generation mode" value={palette.mode} onChange={event => onChange({ ...palette, mode: event.target.value as PaletteMode })}>{PALETTE_MODES.map(mode => <option key={mode} value={mode}>{mode}</option>)}</select></label><span className="cl-toolbar-divider" /><div className="cl-count-control"><label htmlFor="palette-color-count" className="sr-only">Number of colors</label><select id="palette-color-count" className="select" aria-label="Number of colors" value={countValue} onChange={event => { if (event.target.value === "custom") { setIsCustomCount(true); setCustomCount(String(palette.colors.length)); return; } setIsCustomCount(false); setCustomCount(null); changeCount(Number(event.target.value)); }}>{PALETTE_COLOR_OPTIONS.map(count => <option key={count} value={count}>{count} colors</option>)}<option value="custom">Custom</option></select>{countValue === "custom" && <input className="cl-count-input mono" aria-label={`Custom color count, ${MIN_PALETTE_COLORS} to ${MAX_PALETTE_COLORS}`} type="number" min={MIN_PALETTE_COLORS} max={MAX_PALETTE_COLORS} step={1} value={customCountValue} onChange={event => setCustomCount(event.target.value)} onBlur={event => { const next = clampCount(Number(event.target.value)); setCustomCount(null); setIsCustomCount(!PALETTE_COLOR_OPTIONS.includes(next as typeof PALETTE_COLOR_OPTIONS[number])); changeCount(next); }} onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); }} />}</div></div>
       <div className="cl-generate-actions"><span className="cl-space-hint">or press <kbd>space</kbd></span><button className="button button-primary cl-generate" onClick={onGenerate}><Sparkles size={16} />Generate palette</button></div>
     </div>
 
-    <div className="cl-palette" style={{ "--color-count": palette.colors.length } as CSSProperties}>
+    <div className={`cl-palette ${palette.colors.length > 8 ? "cl-palette-many" : ""}`} style={{ "--color-count": palette.colors.length } as CSSProperties}>
       {palette.colors.map((color, index) => {
         const ink = textColor(color.hex);
         const isChecked = checkedIds.includes(color.id);

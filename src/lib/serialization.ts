@@ -1,5 +1,5 @@
 import type { Color, Creation, Gradient, GradientStop, Palette, PaletteMode } from "../types";
-import { normalizeHex, PALETTE_MODES, textColor, uid } from "./color";
+import { MAX_PALETTE_COLORS, normalizeHex, PALETTE_MODES, textColor, uid } from "./color";
 import { gradientCss, GRADIENT_POSITIONS } from "./gradient";
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -17,7 +17,7 @@ export function validateCreation(value: unknown): Creation | null {
   };
   if (value.kind === "palette" && isRecord(value.palette)) {
     const palette = value.palette;
-    if (!Array.isArray(palette.colors) || palette.colors.length < 2 || palette.colors.length > 8 || typeof palette.mode !== "string" || !PALETTE_MODES.includes(palette.mode as PaletteMode)) return null;
+    if (!Array.isArray(palette.colors) || palette.colors.length < 2 || palette.colors.length > MAX_PALETTE_COLORS || typeof palette.mode !== "string" || !PALETTE_MODES.includes(palette.mode as PaletteMode)) return null;
     const colors: Color[] = [];
     for (const entry of palette.colors) {
       if (!isRecord(entry) || typeof entry.hex !== "string" || typeof entry.locked !== "boolean") return null;

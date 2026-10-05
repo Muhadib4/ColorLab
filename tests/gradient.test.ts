@@ -48,6 +48,13 @@ test("shared palettes round-trip mode, colors and lock positions", () => {
   assert.equal(JSON.parse(exportPalette(parsed.palette, "json")).colors.length, 3);
   assert.ok(exportPalette(parsed.palette, "svg").startsWith("<svg "));
   assert.ok(parseSharedCreation("?colors=fff,000,abc"));
+  const custom: Creation = { kind: "palette", palette: { mode: "Random", colors: Array.from({ length: 20 }, (_, index) => ({ id: `custom-${index}`, hex: "#ABCDEF", locked: index % 5 === 0 })) } };
+  const parsedCustom = parseSharedCreation(serializeCreation(custom));
+  assert.equal(parsedCustom?.kind, "palette");
+  if (parsedCustom?.kind === "palette") {
+    assert.equal(parsedCustom.palette.colors.length, 20);
+    assert.equal(JSON.parse(exportPalette(parsedCustom.palette, "json")).colors.length, 20);
+  }
 });
 
 test("all shared gradient types round-trip every editable field", () => {

@@ -15,6 +15,10 @@
 .cl-copy-flash .cl-color-face{box-shadow:inset 0 0 0 3px color-mix(in srgb,currentColor 35%,transparent)}
 .cl-color-values .cl-value-copied code,.cl-color-values .cl-value-copied>span{color:var(--accent)}
 .cl-color-values .cl-value-copied>svg{opacity:1;width:11px;color:var(--accent)}
+.cl-count-input{width:52px;min-height:30px;border:1px solid var(--border);border-radius:6px;background:var(--panel-2);color:var(--text);font-size:12px;padding:4px 6px}
+.cl-palette.cl-palette-many{grid-template-columns:repeat(auto-fit,minmax(132px,1fr))}
+.cl-palette.cl-palette-many .cl-color-card{border-bottom:1px solid var(--border)}
+.cl-palette.cl-palette-many .cl-color-face{height:214px}
 @keyframes cl-swatch-enter{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){
   .cl-select-color,.cl-lock-button{width:40px;height:40px;min-width:40px;min-height:40px}
@@ -24,6 +28,8 @@
   .cl-swatch-tools .cl-swatch-copy svg{width:15px;height:15px}
   .cl-color-values{gap:2px;padding-top:7px;padding-bottom:7px}
   .cl-color-values button{min-height:30px}
+  .cl-count-input{width:46px;min-height:32px;font-size:11px}
+  .cl-palette.cl-palette-many{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cl-heading-actions .button{min-width:40px;min-height:40px}
   .cl-detail-tools .button,.cl-segmented button{min-height:40px}
   .cl-inspector-header .icon-button{min-width:40px;min-height:40px}

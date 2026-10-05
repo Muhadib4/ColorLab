@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { colorName, colorScale, contrastRatio, formatColor, generatePalette, hexToHsl, hexToHsv, hexToRgb, hslToHex, luminance, normalizeHex, PALETTE_MODES, textColor } from "../src/lib/color";
+import { colorName, colorScale, contrastRatio, formatColor, generatePalette, hexToHsl, hexToHsv, hexToRgb, hslToHex, luminance, MAX_PALETTE_COLORS, normalizeHex, PALETTE_MODES, textColor } from "../src/lib/color";
 
 test("HEX normalization accepts shorthand and rejects malformed colors", () => {
   assert.equal(normalizeHex(" abc "), "#AABBCC");
@@ -37,7 +37,7 @@ test("WCAG relative luminance and contrast use linearized sRGB", () => {
 test("each palette harmony generates valid unique slots and respects locks", () => {
   const existing = [{ id: "a", hex: "#6D28D9", locked: true }, { id: "b", hex: "#F0ABFC", locked: false }, { id: "c", hex: "#38BDF8", locked: true }];
   for (const mode of PALETTE_MODES) {
-    for (const count of [3, 4, 5, 6, 8]) {
+    for (const count of [3, 4, 5, 6, 8, 16, 20]) {
       const colors = generatePalette(count, mode, existing);
       assert.equal(colors.length, count);
       assert.deepEqual(colors[0], existing[0]);
@@ -48,7 +48,10 @@ test("each palette harmony generates valid unique slots and respects locks", () 
     }
   }
   assert.equal(generatePalette(-4, "Random").length, 3);
-  assert.equal(generatePalette(99, "Random").length, 8);
+  assert.equal(generatePalette(8, "Random").length, 8);
+  assert.equal(generatePalette(16, "Random").length, 16);
+  assert.equal(generatePalette(20, "Random").length, 20);
+  assert.equal(generatePalette(99, "Random").length, MAX_PALETTE_COLORS);
   assert.equal(generatePalette(Number.NaN, "Random").length, 3);
 });
 

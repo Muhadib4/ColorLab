@@ -1,6 +1,9 @@
 import type { Color, ColorFormat, PaletteMode } from "../types";
 
 export const PALETTE_MODES: PaletteMode[] = ["Random", "Monochromatic", "Analogous", "Complementary", "Split Complementary", "Triadic", "Tetradic", "Warm", "Cool", "Pastel", "Vibrant", "Muted", "Dark", "Light"];
+export const MIN_PALETTE_COLORS = 3;
+export const MAX_PALETTE_COLORS = 24;
+export const PALETTE_COLOR_OPTIONS = [3, 4, 5, 6, 8, 10, 12, 16] as const;
 
 export function uid(): string {
   return globalThis.crypto?.randomUUID?.() ?? `color-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
@@ -110,7 +113,7 @@ export function textColor(hex: string): string {
 const random = (min: number, max: number) => min + Math.random() * (max - min);
 
 export function generatePalette(count: number, mode: PaletteMode, existing: Color[] = []): Color[] {
-  count = Math.round(clamp(count, 3, 8));
+  count = Math.round(clamp(count, MIN_PALETTE_COLORS, MAX_PALETTE_COLORS));
   const anchor = existing.find((color) => color.locked);
   const base = anchor ? hexToHsl(anchor.hex).h : random(0, 360);
   const saturation = random(55, 80);
