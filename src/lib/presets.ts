@@ -36,4 +36,13 @@ export const PALETTE_PRESETS: { name: string; colors: string[]; tag: string }[] 
   { name: "Late night", colors: ["#0F172A", "#1E293B", "#334155", "#6366F1", "#A5B4FC"], tag: "Dark" },
   { name: "Sugar rush", colors: ["#F472B6", "#FB923C", "#FDE047", "#86EFAC", "#93C5FD"], tag: "Playful" },
   { name: "Modern muse", colors: ["#18181B", "#52525B", "#D4D4D8", "#FAFAFA", "#A3E635"], tag: "Bold" },
+  { name: "Cyberpunk", colors: ["#0B1026", "#7C3AED", "#EC4899", "#FDE047"], tag: "Futuristic" },
+  { name: "Midnight luxe", colors: ["#09090B", "#27272A", "#A78BFA", "#FDE68A"], tag: "Luxury" },
+  { name: "Aurora field", colors: ["#172554", "#0F766E", "#34D399", "#D9F99D"], tag: "Aurora" },
+  { name: "Candy cloud", colors: ["#FBCFE8", "#F5D0FE", "#C4B5FD", "#BAE6FD"], tag: "Candy" },
+  { name: "Monochrome ink", colors: ["#09090B", "#27272A", "#71717A", "#E4E4E7"], tag: "Monochrome" },
+  { name: "SaaS clarity", colors: ["#172554", "#2563EB", "#38BDF8", "#F8FAFC"], tag: "UI / SaaS" },
+  { name: "Vintage market", colors: ["#78350F", "#B45309", "#D6B88D", "#365314"], tag: "Vintage" },
+  { name: "Neon arcade", colors: ["#111827", "#22D3EE", "#A3E635", "#F43F5E"], tag: "Neon" },
+  { name: "Light studio", colors: ["#FFFFFF", "#F4F4F5", "#E0E7FF", "#A78BFA"], tag: "Light" },
 ];

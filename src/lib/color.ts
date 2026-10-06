@@ -112,15 +112,19 @@ export function textColor(hex: string): string {
 
 const random = (min: number, max: number) => min + Math.random() * (max - min);
 
-export function generatePalette(count: number, mode: PaletteMode, existing: Color[] = []): Color[] {
+export function generatePalette(count: number, mode: PaletteMode, existing: Color[] = [], seedHexes: string[] = []): Color[] {
   count = Math.round(clamp(count, MIN_PALETTE_COLORS, MAX_PALETTE_COLORS));
   const anchor = existing.find((color) => color.locked);
-  const base = anchor ? hexToHsl(anchor.hex).h : random(0, 360);
-  const saturation = random(55, 80);
+  const seeds = seedHexes.map(normalizeHex).filter((hex): hex is string => Boolean(hex)).slice(0, 4);
+  const base = anchor ? hexToHsl(anchor.hex).h : seeds.length ? hexToHsl(seeds[0]).h : random(0, 360);
+  const saturation = seeds.length ? hexToHsl(seeds[0]).s : random(55, 80);
   return Array.from({ length: count }, (_, index) => {
     if (existing[index]?.locked) return { ...existing[index] };
+    if (seeds[index]) return { id: uid(), hex: seeds[index], locked: false };
     const fraction = index / Math.max(1, count - 1);
-    let h = base, s = saturation, l = random(44, 67);
+    const seed = seeds[index % Math.max(1, seeds.length)];
+    const seedHsl = seed ? hexToHsl(seed) : null;
+    let h = seedHsl?.h ?? base, s = seedHsl?.s ?? saturation, l = seedHsl?.l ?? (44 + fraction * 23);
     switch (mode) {
       case "Monochromatic": l = 24 + fraction * 62; s = saturation - fraction * 14; break;
       case "Analogous": h = base - 38 + fraction * 76; l = 42 + fraction * 30; break;
