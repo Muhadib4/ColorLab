@@ -61,7 +61,7 @@ export default function ColorWheel({ onUsePalette, copy, notify }: Props) {
     event.preventDefault();
     activeHandle.current = handleIndex;
     setDragging(true);
-    event.currentTarget.setPointerCapture(event.pointerId);
+    wheelRef.current?.setPointerCapture(event.pointerId);
     setBaseFromAngle(getAngleFromPointer(event), OFFSETS[harmony][handleIndex]);
   };
 
@@ -74,7 +74,7 @@ export default function ColorWheel({ onUsePalette, copy, notify }: Props) {
     if (activeHandle.current === null) return;
     activeHandle.current = null;
     setDragging(false);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (wheelRef.current?.hasPointerCapture(event.pointerId)) wheelRef.current.releasePointerCapture(event.pointerId);
   };
 
   const randomize = () => {
