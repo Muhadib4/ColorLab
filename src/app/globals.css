@@ -401,9 +401,9 @@ input[type="color"] { cursor:pointer; }
 .wheel-core { transition:background-color .25s,color .25s,box-shadow .25s,transform .25s; animation:core-breathe 3.5s ease-in-out infinite; }
 .wheel-picker { transition:border-color .2s; }
 .wheel-picker:focus-within { border-color:color-mix(in srgb,var(--accent) 35%,var(--border)); }
-.harmony-result { animation:panel-rise .45s ease-out both; }
 .harmony-swatches { perspective:700px; }
-.harmony-swatch { animation:swatch-in .4s cubic-bezier(.2,.8,.2,1) both; animation-delay:calc(var(--swatch-index, 0) * 45ms); }
+/* Color values update in place — no enter/reload animation on result changes. */
+.harmony-swatch { animation:none; }
 .harmony-swatch .swatch-index { position:absolute; top:9px; left:10px; z-index:1; font-family:var(--font-mono),monospace; font-size:7px; opacity:.6; }
 .harmony-swatch:hover .swatch-index { opacity:1; }
 .wheel-templates { margin-top:26px; padding-top:25px; border-top:1px solid var(--border); }
