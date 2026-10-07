@@ -18,6 +18,8 @@ interface ColorLabProps {
   format: ColorFormat;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  selectedSeeds: string[];
+  onSeedChange: (colors: string[]) => void;
 }
 
 interface HexFieldProps {
@@ -111,7 +113,7 @@ function ColorInspector({ color, palette, onChange, onClose, copy, notify }: {
   </dialog>;
 }
 
-export default function ColorLab({ palette, onChange, onGenerate, onSave, onExport, onSendToGradient, copy, notify, format, selectedId, onSelect }: ColorLabProps) {
+export default function ColorLab({ palette, onChange, onGenerate, onSave, onExport, onSendToGradient, copy, notify, format, selectedId, onSelect, selectedSeeds, onSeedChange }: ColorLabProps) {
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const [customCount, setCustomCount] = useState<string | null>(null);
   const [isCustomCount, setIsCustomCount] = useState(false);
@@ -154,18 +156,20 @@ export default function ColorLab({ palette, onChange, onGenerate, onSave, onExpo
     <div className="cl-workspace-heading"><div className="cl-heading-label"><span className="cl-live-dot" /><h2>Your palette</h2><span className="cl-color-count mono">{palette.colors.length} colors</span></div><div className="cl-heading-actions"><button className="button button-ghost" onClick={onSave}><Plus size={15} />Save palette</button><button className="button button-ghost" onClick={onExport}><ArrowDownToLine size={15} />Export</button></div></div>
     <div className="cl-toolbar">
       <div className="cl-generator-options"><label className="cl-mode-control"><SlidersHorizontal size={15} /><span className="sr-only">Palette generation mode</span><select className="select" aria-label="Palette generation mode" value={palette.mode} onChange={event => onChange({ ...palette, mode: event.target.value as PaletteMode })}>{PALETTE_MODES.map(mode => <option key={mode} value={mode}>{mode}</option>)}</select></label><span className="cl-toolbar-divider" /><div className="cl-count-control"><label htmlFor="palette-color-count" className="sr-only">Number of colors</label><select id="palette-color-count" className="select" aria-label="Number of colors" value={countValue} onChange={event => { if (event.target.value === "custom") { setIsCustomCount(true); setCustomCount(String(palette.colors.length)); return; } setIsCustomCount(false); setCustomCount(null); changeCount(Number(event.target.value)); }}>{PALETTE_COLOR_OPTIONS.map(count => <option key={count} value={count}>{count} colors</option>)}<option value="custom">Custom</option></select>{countValue === "custom" && <input className="cl-count-input mono" aria-label={`Custom color count, ${MIN_PALETTE_COLORS} to ${MAX_PALETTE_COLORS}`} type="number" min={MIN_PALETTE_COLORS} max={MAX_PALETTE_COLORS} step={1} value={customCountValue} onChange={event => setCustomCount(event.target.value)} onBlur={event => { const next = clampCount(Number(event.target.value)); setCustomCount(null); setIsCustomCount(!PALETTE_COLOR_OPTIONS.includes(next as typeof PALETTE_COLOR_OPTIONS[number])); changeCount(next); }} onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); }} />}</div></div>
-      <div className="cl-generate-actions"><span className="cl-space-hint">or press <kbd>space</kbd></span><button className="button button-primary cl-generate" onClick={onGenerate}><Sparkles size={16} />Generate palette</button></div>
+      <div className="cl-generate-actions"><span className="cl-seed-status" title="Selected colors are used as generator seeds"><span className="cl-seed-dots">{selectedSeeds.map(hex => <i key={hex} style={{ background: hex }} />)}</span>{selectedSeeds.length ? `${selectedSeeds.length}/4 seeds` : "Choose up to 4 seeds"}</span><span className="cl-space-hint">or press <kbd>space</kbd></span><button className="button button-primary cl-generate" onClick={onGenerate}><Sparkles size={16} />Generate palette</button></div>
     </div>
 
     <div className={`cl-palette ${palette.colors.length > 8 ? "cl-palette-many" : ""}`} style={{ "--color-count": palette.colors.length } as CSSProperties}>
       {palette.colors.map((color, index) => {
         const ink = textColor(color.hex);
         const isChecked = checkedIds.includes(color.id);
+        const isSeed = selectedSeeds.includes(color.hex);
         const isCopied = copiedColor?.id === color.id;
         const formatCopied = isCopied && copiedColor.format === format;
-        return <article className={`cl-color-card ${isChecked ? "cl-checked" : ""} ${isCopied ? "cl-copy-flash" : ""}`} key={color.id} style={{ "--swatch-delay": `${index * 18}ms` } as CSSProperties}>
+        return <article className={`cl-color-card ${isChecked ? "cl-checked" : ""} ${isSeed ? "cl-seed-selected" : ""} ${isCopied ? "cl-copy-flash" : ""}`} key={color.id} style={{ "--swatch-delay": `${index * 18}ms` } as CSSProperties}>
           <div className="cl-color-face" style={{ backgroundColor: color.hex, color: ink }}>
             <button className={`cl-select-color ${isChecked ? "is-checked" : ""}`} aria-label={`${isChecked ? "Deselect" : "Select"} ${color.hex} for Gradient Forge`} aria-pressed={isChecked} onClick={() => setCheckedIds(ids => { const currentIds = ids.filter(id => palette.colors.some(item => item.id === id)); return currentIds.includes(color.id) ? currentIds.filter(id => id !== color.id) : [...currentIds, color.id]; })}>{isChecked ? <Check size={14} strokeWidth={2.5} /> : <span className="mono">{String(index + 1).padStart(2, "0")}</span>}</button>
+            <button className={`cl-seed-button ${isSeed ? "is-seed" : ""}`} aria-label={`${isSeed ? "Remove" : "Use"} ${color.hex} as generator seed`} aria-pressed={isSeed} title={isSeed ? "Remove generator seed" : "Use as generator seed"} onClick={() => { if (isSeed) onSeedChange(selectedSeeds.filter(hex => hex !== color.hex)); else if (selectedSeeds.length < 4) onSeedChange([...selectedSeeds, color.hex]); else notify("You can use up to 4 seed colors.", "error"); }}>{isSeed ? <Check size={13} strokeWidth={2.5} /> : <Sparkles size={13} />}</button>
             <button className={`cl-lock-button ${color.locked ? "is-locked" : ""}`} onClick={() => { updateColor(color.id, { locked: !color.locked }); notify(color.locked ? "Color unlocked" : "Color locked"); }} aria-label={`${color.locked ? "Unlock" : "Lock"} ${color.hex}`} aria-pressed={color.locked} title={color.locked ? "Unlock color" : "Lock this color"}>{color.locked ? <LockKeyhole size={16} /> : <UnlockKeyhole size={16} />}</button>
             <button className="cl-color-inspect" onClick={() => onSelect(color.id)} aria-label={`Inspect ${colorName(color.hex)}, ${color.hex}`}><span className="cl-color-open"><ArrowUpRight size={23} /></span><span className="cl-color-identity"><span className="cl-color-name">{colorName(color.hex)}</span><strong className="mono">{format === "HEX" ? color.hex.slice(1) : color.hex}</strong></span></button>
             <div className="cl-swatch-tools"><button aria-label={`Move ${color.hex} left`} title="Move left" disabled={index === 0} onClick={() => moveColor(index, -1)}><ArrowLeft size={14} /></button><button className="cl-swatch-copy" onClick={() => void copyColor(color, format)} aria-label={formatCopied ? `${format} copied` : `Copy ${format} for ${color.hex}`}>{formatCopied ? <Check size={13} /> : <Copy size={12} />}<span>{formatCopied ? "Copied" : `Copy ${format}`}</span></button><button aria-label={`Move ${color.hex} right`} title="Move right" disabled={index === palette.colors.length - 1} onClick={() => moveColor(index, 1)}><ArrowRight size={14} /></button></div>

@@ -7,7 +7,7 @@ export type GradientMode = "Smooth" | "Vibrant" | "Pastel" | "Neon" | "Dark" | "
 export interface GradientStop { id: string; color: string; position: number }
 export interface Gradient { type: GradientType; angle: number; shape: "circle" | "ellipse"; position: string; stops: GradientStop[] }
 export interface GradientPreset { name: string; category: string; colors: string[]; angle: number }
-export type StudioTab = "studio" | "explore" | "colorlab" | "gradient" | "saved" | "history";
+export type StudioTab = "studio" | "explore" | "colorlab" | "wheel" | "gradient" | "saved" | "history";
 export type Creation = { kind: "palette"; palette: Palette } | { kind: "gradient"; gradient: Gradient };
 export type SavedCreation = Creation & { id: string; name: string; createdAt: string };
 export interface AppSettings { theme: "dark" | "light" | "system"; sfx: boolean; sfxVolume: number; ambient: boolean; ambientVolume: number; muted: boolean; motion: "full" | "reduced"; format: ColorFormat }
