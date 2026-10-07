@@ -44,10 +44,15 @@ export default function ColorWheel({ onUsePalette, copy, notify }: Props) {
     return hslToHex(hsl.h + offset, saturation, lightness);
   }), [harmony, hsl.h, hsl.l, hsl.s]);
 
-  const wheelAngles = useMemo(() => OFFSETS[harmony].map(offset => (hsl.h + offset + 360) % 360), [harmony, hsl.h]);
+  // The wheel uses a conic-gradient starting at -90deg (12 o'clock).
+  // Convert HSL hue to the wheel's visual rotation so the handle always
+  // points at the actual color shown on the wheel.
+  const wheelAngles = useMemo(() => OFFSETS[harmony].map(offset => (hsl.h + offset - 90 + 360) % 360), [harmony, hsl.h]);
 
   const setBaseFromAngle = (angle: number, offset = 0) => {
-    setBase(hslToHex(angle - offset, hsl.s || 70, hsl.l || 55));
+    // Pointer angle is measured from the right (3 o'clock), while the
+    // conic wheel maps hue 0 (red) to the top (12 o'clock).
+    setBase(hslToHex(angle + 90 - offset, hsl.s || 70, hsl.l || 55));
   };
 
   const getAngleFromPointer = (event: React.PointerEvent<HTMLElement>) => {
