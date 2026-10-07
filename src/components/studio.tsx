@@ -111,11 +111,14 @@ export default function Studio() {
   const toggleTheme = () => { const isDark = document.documentElement.dataset.theme === "dark"; setSettings(previous => ({ ...previous, theme: isDark ? "light" : "dark" })); };
   const addRecent = (creation: Creation, title: string) => setRecent(previous => [{ ...creation, id: uid(), name: title, createdAt: new Date().toISOString() }, ...previous].slice(0, 30));
   const changePalette = (value: Palette) => dispatch({ type: "palette", value });
-  const generateColors = () => {
+  const generateColors = (sourceHex?: string) => {
     if (palette.colors.every(color => color.locked)) { notify("All colors are locked. Unlock one to explore."); return; }
-    const next = librarySource
-      ? paletteFromLibraryItem(librarySource, palette.colors.length, palette.colors)
-      : { ...palette, colors: generatePalette(palette.colors.length, palette.mode, palette.colors, selectedSeeds) };
+    const seeds = sourceHex ? [sourceHex] : selectedSeeds;
+    const next = sourceHex
+      ? { ...palette, colors: generatePalette(palette.colors.length, palette.mode, palette.colors, seeds) }
+      : librarySource
+        ? paletteFromLibraryItem(librarySource, palette.colors.length, palette.colors)
+        : { ...palette, colors: generatePalette(palette.colors.length, palette.mode, palette.colors, seeds) };
     changePalette(next); addRecent({ kind: "palette", palette: next }, `${next.mode} exploration`); sound("generate"); notify("A fresh perspective. Palette generated.");
   };
   const forgeGradient = (mode: GradientMode = "Smooth") => { const next = generateGradient(mode); dispatch({ type: "gradient", value: next }); addRecent({ kind: "gradient", gradient: next }, `${mode} gradient`); sound("generate"); notify("Gradient forged"); };
