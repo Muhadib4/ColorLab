@@ -88,8 +88,7 @@ export default function ColorWheel({ onUsePalette, copy, notify }: Props) {
     const saturation = 58 + Math.floor(Math.random() * 34);
     const lightness = 42 + Math.floor(Math.random() * 22);
     setBase(hslToHex(hue, saturation, lightness));
-    setHarmony(HARMONIES[Math.floor(Math.random() * HARMONIES.length)]);
-    notify("New random harmony generated");
+    notify(`Randomized ${harmony} colors`);
   };
 
   const applyTemplate = (template: (typeof WHEEL_TEMPLATES)[number]) => {
