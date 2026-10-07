@@ -50,14 +50,15 @@ export default function ColorWheel({ onUsePalette, copy, notify }: Props) {
     setBase(hslToHex(angle - offset, hsl.s || 70, hsl.l || 55));
   };
 
-  const getAngleFromPointer = (event: React.PointerEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
+  const getAngleFromPointer = (event: React.PointerEvent<HTMLElement>) => {
+    const rect = wheelRef.current?.getBoundingClientRect();
+    if (!rect) return hsl.h;
     const x = event.clientX - rect.left - rect.width / 2;
     const y = event.clientY - rect.top - rect.height / 2;
     return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
   };
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>, handleIndex = 0) => {
+  const handlePointerDown = (event: React.PointerEvent<HTMLElement>, handleIndex = 0) => {
     event.preventDefault();
     activeHandle.current = handleIndex;
     setDragging(true);
@@ -65,12 +66,12 @@ export default function ColorWheel({ onUsePalette, copy, notify }: Props) {
     setBaseFromAngle(getAngleFromPointer(event), OFFSETS[harmony][handleIndex]);
   };
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = (event: React.PointerEvent<HTMLElement>) => {
     if (!dragging || activeHandle.current === null) return;
     setBaseFromAngle(getAngleFromPointer(event), OFFSETS[harmony][activeHandle.current]);
   };
 
-  const stopDragging = (event: React.PointerEvent<HTMLDivElement>) => {
+  const stopDragging = (event: React.PointerEvent<HTMLElement>) => {
     if (activeHandle.current === null) return;
     activeHandle.current = null;
     setDragging(false);
@@ -138,7 +139,7 @@ export default function ColorWheel({ onUsePalette, copy, notify }: Props) {
                 style={{ background: colors[index], color: textColor(colors[index]) }}
                 onPointerDown={event => {
                   event.stopPropagation();
-                  handlePointerDown(event as unknown as React.PointerEvent<HTMLDivElement>, index);
+                  handlePointerDown(event, index);
                 }}
                 onClick={event => event.stopPropagation()}
                 title={`${colors[index]} · Drag to rotate`}
@@ -175,7 +176,7 @@ export default function ColorWheel({ onUsePalette, copy, notify }: Props) {
           <div className="harmony-result-head"><div><span className="eyebrow">LIVE RESULT</span><h3>{harmony}</h3></div><span className="mono">{colors.length} colors</span></div>
           <div className="harmony-swatches">
             {colors.map((hex, index) => (
-              <button key={`${hex}-${index}`} className="harmony-swatch" style={{ background: hex, color: textColor(hex) }} onClick={() => void copy(formatColor(hex, "HEX"), "HEX copied")} title="Copy HEX">
+              <button key={`${hex}-${index}`} className="harmony-swatch" style={{ background: hex, color: textColor(hex), "--swatch-index": index } as React.CSSProperties} onClick={() => void copy(formatColor(hex, "HEX"), "HEX copied")} title="Copy HEX">
                 <span className="swatch-index">{index + 1}</span><strong>{hex}</strong><small>{formatColor(hex, "RGB")}</small><Copy size={12} />
               </button>
             ))}
