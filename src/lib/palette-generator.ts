@@ -4,7 +4,14 @@ export interface BaseColor { id: string; name: string; englishName: string; hex:
 export interface GeneratedColor { id: string; name: string; hex: string; family: string }
 
 export const BASE_COLORS: BaseColor[] = [
-  ["Merah", "Red", "#EF4444"], ["Biru", "Blue", "#3B82F6"], ["Hijau", "Green", "#22C55E"], ["Kuning", "Yellow", "#FACC15"], ["Oranye", "Orange", "#F97316"], ["Ungu", "Purple", "#8B5CF6"], ["Putih", "White", "#FFFFFF"], ["Hitam", "Black", "#111827"], ["Merah Muda", "Pink", "#EC4899"], ["Cokelat", "Brown", "#8B5E3C"], ["Abu-abu", "Grey", "#6B7280"], ["Biru Langit", "Sky Blue", "#38BDF8"], ["Beige", "Beige", "#D6C2A3"], ["Violet", "Violet", "#7C3AED"], ["Magenta", "Magenta", "#D946EF"], ["Marun", "Maroon", "#7F1D1D"], ["Navy", "Navy", "#1E3A8A"], ["Teal", "Teal", "#0F766E"], ["Lavender", "Lavender", "#C4B5FD"], ["Peach", "Peach", "#FDBA74"], ["Olive", "Olive", "#6B7A2F"], ["Silver", "Silver", "#A8B0BC"], ["Gold", "Gold", "#D4A72C"], ["Indigo", "Indigo", "#4F46E5"], ["Coral", "Coral", "#F87171"], ["Mint", "Mint", "#6EE7B7"], ["Plum", "Plum", "#7E2952"], ["Salmon", "Salmon", "#FA8072"], ["Tan", "Tan", "#C19A6B"], ["Toska", "Turquoise", "#2DD4BF"],
+  ["Merah", "Red", "#EF4444"], ["Biru", "Blue", "#3B82F6"], ["Kuning", "Yellow", "#FACC15"], ["Hijau", "Green", "#22C55E"],
+  ["Oranye (Jingga)", "Orange", "#F97316"], ["Ungu", "Purple", "#8B5CF6"], ["Merah Muda (Pink)", "Pink", "#EC4899"], ["Cokelat", "Brown", "#8B5E3C"],
+  ["Hitam", "Black", "#111111"], ["Putih", "White", "#FFFFFF"], ["Abu-abu", "Grey", "#6B7280"], ["Magenta", "Magenta", "#D946EF"],
+  ["Cyan (Biru Laut)", "Cyan", "#06B6D4"], ["Marun", "Maroon", "#800000"], ["Navy (Biru Dongker)", "Navy", "#000080"], ["Zaitun (Olive)", "Olive", "#808000"],
+  ["Toska (Turquoise)", "Turquoise", "#2DD4BF"], ["Emas (Gold)", "Gold", "#D4AF37"], ["Perak (Silver)", "Silver", "#C0C0C0"], ["Lavender", "Lavender", "#C4B5FD"],
+  ["Coral (Koral)", "Coral", "#FF7F50"], ["Peach (Persik)", "Peach", "#FDBA74"], ["Mint", "Mint", "#98FF98"], ["Lilac", "Lilac", "#C8A2C8"],
+  ["Burgundy", "Burgundy", "#800020"], ["Teal", "Teal", "#008080"], ["Mustard", "Mustard", "#D4A017"], ["Salmon", "Salmon", "#FA8072"],
+  ["Indigo", "Indigo", "#4B0082"], ["Plum", "Plum", "#8E4585"],
 ].map(([name, englishName, hex], index) => ({ id: `base-${index}`, name, englishName, hex }));
 
 const clamp = (value: number) => Math.min(100, Math.max(0, value));
