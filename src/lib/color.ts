@@ -114,10 +114,19 @@ const random = (min: number, max: number) => min + Math.random() * (max - min);
 
 export function generatePalette(count: number, mode: PaletteMode, existing: Color[] = [], seedHexes: string[] = []): Color[] {
   count = Math.round(clamp(count, MIN_PALETTE_COLORS, MAX_PALETTE_COLORS));
-  const anchor = existing.find((color) => color.locked);
   const seeds = seedHexes.map(normalizeHex).filter((hex): hex is string => Boolean(hex)).slice(0, 4);
-  const base = anchor ? hexToHsl(anchor.hex).h : seeds.length ? hexToHsl(seeds[0]).h : random(0, 360);
-  const saturation = seeds.length ? hexToHsl(seeds[0]).s : random(55, 80);
+  const anchor = existing.find((color) => color.locked);
+  const primarySeed = seeds[0];
+  const base = primarySeed
+    ? hexToHsl(primarySeed).h
+    : anchor
+      ? hexToHsl(anchor.hex).h
+      : random(0, 360);
+  const saturation = primarySeed
+    ? hexToHsl(primarySeed).s
+    : anchor
+      ? hexToHsl(anchor.hex).s
+      : random(55, 80);
   return Array.from({ length: count }, (_, index) => {
     if (existing[index]?.locked) return { ...existing[index] };
     if (seeds[index]) return { id: uid(), hex: seeds[index], locked: false };
