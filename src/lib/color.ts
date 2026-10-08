@@ -3,7 +3,7 @@ import type { Color, ColorFormat, PaletteMode } from "../types";
 export const PALETTE_MODES: PaletteMode[] = ["Random", "Monochromatic", "Analogous", "Complementary", "Split Complementary", "Triadic", "Tetradic", "Warm", "Cool", "Pastel", "Vibrant", "Muted", "Dark", "Light"];
 export const MIN_PALETTE_COLORS = 3;
 export const MAX_PALETTE_COLORS = 24;
-export const PALETTE_COLOR_OPTIONS = [3, 4, 5, 6, 8, 10, 12, 16] as const;
+export const PALETTE_COLOR_OPTIONS = [3, 4, 5, 6, 8, 10, 12, 16, 20, 24] as const;
 
 export function uid(): string {
   return globalThis.crypto?.randomUUID?.() ?? `color-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
@@ -119,8 +119,6 @@ export function generatePalette(count: number, mode: PaletteMode, existing: Colo
     .map(normalizeHex)
     .filter((hex): hex is string => Boolean(hex)))]
     .slice(0, 4);
-
-  const locked = existing.filter(color => color.locked).map(color => normalizeHex(color.hex)).filter((hex): hex is string => Boolean(hex));
 
   // No seeds: keep the original free-form generator behavior.
   if (!seeds.length) {
@@ -256,12 +254,7 @@ export function generatePalette(count: number, mode: PaletteMode, existing: Colo
     return { id: uid(), hex: hslToHex(h, s, l), locked: false };
   });
 
-  // Keep selected seeds represented even when the palette has fewer slots than seeds.
-  // Count is always at least 3, and seeds are capped at 4.
-  return generated.map((color, index) => {
-    const lockedHex = locked[index];
-    return lockedHex && !seeds.includes(color.hex) ? { ...color, hex: lockedHex, locked: true } : color;
-  });
+  return generated;
 }
 export function colorScale(hex: string, kind: "shades" | "tints" | "tones"): { label: string; hex: string }[] {
   const labels = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"];
