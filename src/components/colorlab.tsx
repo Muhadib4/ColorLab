@@ -150,7 +150,7 @@ export default function ColorLab({ palette, onChange, onGenerate, onSave, onExpo
   };
   const changeCount = (count: number) => {
     const nextCount = clampCount(count);
-    const colors = generatePalette(nextCount, palette.mode, palette.colors.map(color => ({ ...color, locked: true }))).map((color, index) => ({ ...color, locked: palette.colors[index]?.locked ?? false }));
+    const colors = generatePalette(nextCount, palette.mode, palette.colors, selectedSeeds).map((color, index) => ({ ...color, locked: palette.colors[index]?.locked ?? false }));
     onChange({ ...palette, colors });
   };
 
