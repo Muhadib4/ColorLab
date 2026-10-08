@@ -114,46 +114,155 @@ const random = (min: number, max: number) => min + Math.random() * (max - min);
 
 export function generatePalette(count: number, mode: PaletteMode, existing: Color[] = [], seedHexes: string[] = []): Color[] {
   count = Math.round(clamp(count, MIN_PALETTE_COLORS, MAX_PALETTE_COLORS));
-  const seeds = seedHexes.map(normalizeHex).filter((hex): hex is string => Boolean(hex)).slice(0, 4);
-  const anchor = existing.find((color) => color.locked);
-  const primarySeed = seeds[0];
-  const base = primarySeed
-    ? hexToHsl(primarySeed).h
-    : anchor
-      ? hexToHsl(anchor.hex).h
-      : random(0, 360);
-  const saturation = primarySeed
-    ? hexToHsl(primarySeed).s
-    : anchor
-      ? hexToHsl(anchor.hex).s
-      : random(55, 80);
-  return Array.from({ length: count }, (_, index) => {
+
+  const seeds = [...new Set(seedHexes
+    .map(normalizeHex)
+    .filter((hex): hex is string => Boolean(hex)))]
+    .slice(0, 4);
+
+  const locked = existing.filter(color => color.locked).map(color => normalizeHex(color.hex)).filter((hex): hex is string => Boolean(hex));
+
+  // No seeds: keep the original free-form generator behavior.
+  if (!seeds.length) {
+    const anchor = existing.find(color => color.locked);
+    const base = anchor ? hexToHsl(anchor.hex).h : random(0, 360);
+    const saturation = anchor ? hexToHsl(anchor.hex).s : random(55, 80);
+
+    return Array.from({ length: count }, (_, index) => {
+      if (existing[index]?.locked) return { ...existing[index] };
+
+      const fraction = index / Math.max(1, count - 1);
+      let h = base, s = saturation, l = 44 + fraction * 23;
+
+      switch (mode) {
+        case "Monochromatic": l = 24 + fraction * 62; s = saturation - fraction * 14; break;
+        case "Analogous": h = base - 38 + fraction * 76; l = 42 + fraction * 30; break;
+        case "Complementary": h = base + (index % 2) * 180; l = 39 + fraction * 35; break;
+        case "Split Complementary": h = base + [0, 150, 210][index % 3]; l = 42 + fraction * 30; break;
+        case "Triadic": h = base + (index % 3) * 120; l = 42 + fraction * 30; break;
+        case "Tetradic": h = base + (index % 4) * 90; l = 42 + fraction * 30; break;
+        case "Warm": h = random(-20, 55); s = random(68, 94); l = 42 + fraction * 33; break;
+        case "Cool": h = random(165, 260); s = random(48, 85); l = 35 + fraction * 38; break;
+        case "Pastel": h = base + fraction * 150; s = random(48, 79); l = random(77, 87); break;
+        case "Vibrant": h = base + fraction * 210; s = random(80, 98); l = random(49, 64); break;
+        case "Muted": h = base + fraction * 140; s = random(16, 32); l = 38 + fraction * 38; break;
+        case "Dark": h = base + fraction * 105; s = random(28, 60); l = 11 + fraction * 22; break;
+        case "Light": h = base + fraction * 145; s = random(38, 70); l = random(85, 94); break;
+        default: h = base + fraction * random(160, 300); s = random(42, 88); l = 37 + fraction * 41;
+      }
+
+      return { id: uid(), hex: hslToHex(h, s, l), locked: false };
+    });
+  }
+
+  // Seeds are anchors for the entire palette, not colors that only occupy the first slots.
+  const seedHsl = seeds.map(hexToHsl);
+  const averageHue = (() => {
+    const x = seedHsl.reduce((sum, c) => sum + Math.cos(c.h * Math.PI / 180), 0);
+    const y = seedHsl.reduce((sum, c) => sum + Math.sin(c.h * Math.PI / 180), 0);
+    return hue(Math.atan2(y, x) * 180 / Math.PI);
+  })();
+  const averageSaturation = seedHsl.reduce((sum, c) => sum + c.s, 0) / seedHsl.length;
+  const averageLightness = seedHsl.reduce((sum, c) => sum + c.l, 0) / seedHsl.length;
+
+  const nearestSeed = (index: number) => seedHsl[index % seedHsl.length];
+  const generated = Array.from({ length: count }, (_, index) => {
     if (existing[index]?.locked) return { ...existing[index] };
-    if (seeds[index]) return { id: uid(), hex: seeds[index], locked: false };
-    const fraction = index / Math.max(1, count - 1);
-    const seed = seeds[index % Math.max(1, seeds.length)];
-    const seedHsl = seed ? hexToHsl(seed) : null;
-    let h = seedHsl?.h ?? base, s = seedHsl?.s ?? saturation, l = seedHsl?.l ?? (44 + fraction * 23);
-    switch (mode) {
-      case "Monochromatic": l = 24 + fraction * 62; s = saturation - fraction * 14; break;
-      case "Analogous": h = base - 38 + fraction * 76; l = 42 + fraction * 30; break;
-      case "Complementary": h = base + (index % 2) * 180; l = 39 + fraction * 35; break;
-      case "Split Complementary": h = base + [0, 150, 210][index % 3]; l = 42 + fraction * 30; break;
-      case "Triadic": h = base + (index % 3) * 120; l = 42 + fraction * 30; break;
-      case "Tetradic": h = base + (index % 4) * 90; l = 42 + fraction * 30; break;
-      case "Warm": h = random(-20, 55); s = random(68, 94); l = 42 + fraction * 33; break;
-      case "Cool": h = random(165, 260); s = random(48, 85); l = 35 + fraction * 38; break;
-      case "Pastel": h = base + fraction * 150; s = random(48, 79); l = random(77, 87); break;
-      case "Vibrant": h = base + fraction * 210; s = random(80, 98); l = random(49, 64); break;
-      case "Muted": h = base + fraction * 140; s = random(16, 32); l = 38 + fraction * 38; break;
-      case "Dark": h = base + fraction * 105; s = random(28, 60); l = 11 + fraction * 22; break;
-      case "Light": h = base + fraction * 145; s = random(38, 70); l = random(85, 94); break;
-      default: h = base + fraction * random(160, 300); s = random(42, 88); l = 37 + fraction * 41;
+
+    // Spread seed colors through the palette rather than placing them only at the beginning.
+    if (index < seeds.length) {
+      const seed = seeds[index];
+      return { id: uid(), hex: seed, locked: false };
     }
+
+    const fraction = index / Math.max(1, count - 1);
+    const source = nearestSeed(index);
+    let h = source.h;
+    let s = source.s;
+    let l = source.l;
+
+    switch (mode) {
+      case "Monochromatic":
+        h = averageHue;
+        s = clamp(averageSaturation + (source.s - averageSaturation) * 0.35, 18, 96);
+        l = clamp(18 + fraction * 68, 12, 94);
+        break;
+      case "Analogous":
+        h = averageHue + (fraction - 0.5) * 76 + (source.h - averageHue) * 0.35;
+        s = clamp(averageSaturation + (source.s - averageSaturation) * 0.45, 25, 96);
+        l = clamp(30 + fraction * 48, 14, 92);
+        break;
+      case "Complementary":
+        h = source.h + (index % 2 ? 180 : 0);
+        s = clamp(source.s, 30, 96);
+        l = clamp(30 + fraction * 48, 14, 92);
+        break;
+      case "Split Complementary":
+        h = source.h + [0, 150, 210][index % 3];
+        s = clamp(source.s, 30, 96);
+        l = clamp(32 + fraction * 45, 15, 92);
+        break;
+      case "Triadic":
+        h = source.h + (index % 3) * 120;
+        s = clamp(source.s, 32, 96);
+        l = clamp(32 + fraction * 45, 15, 92);
+        break;
+      case "Tetradic":
+        h = source.h + (index % 4) * 90;
+        s = clamp(source.s, 30, 96);
+        l = clamp(32 + fraction * 45, 15, 92);
+        break;
+      case "Warm":
+        h = source.h * 0.7 + 35 * 0.3;
+        s = clamp(Math.max(source.s, 62), 55, 96);
+        l = clamp(30 + fraction * 48, 16, 90);
+        break;
+      case "Cool":
+        h = source.h * 0.7 + 210 * 0.3;
+        s = clamp(Math.max(source.s, 48), 40, 90);
+        l = clamp(30 + fraction * 48, 16, 90);
+        break;
+      case "Pastel":
+        h = source.h + (fraction - 0.5) * 36;
+        s = clamp(source.s * 0.62, 28, 72);
+        l = clamp(76 + ((source.l - averageLightness) * 0.08), 72, 92);
+        break;
+      case "Vibrant":
+        h = source.h + (fraction - 0.5) * 48;
+        s = clamp(Math.max(source.s, 78), 72, 100);
+        l = clamp(46 + (source.l - averageLightness) * 0.18, 38, 68);
+        break;
+      case "Muted":
+        h = source.h + (fraction - 0.5) * 42;
+        s = clamp(Math.min(source.s, 38), 14, 42);
+        l = clamp(source.l + (50 - source.l) * 0.18, 28, 76);
+        break;
+      case "Dark":
+        h = source.h + (fraction - 0.5) * 36;
+        s = clamp(source.s * 0.82, 22, 78);
+        l = clamp(12 + fraction * 25, 8, 38);
+        break;
+      case "Light":
+        h = source.h + (fraction - 0.5) * 44;
+        s = clamp(source.s * 0.78, 25, 78);
+        l = clamp(84 + (source.l - averageLightness) * 0.08, 78, 96);
+        break;
+      default:
+        h = source.h + (fraction - 0.5) * 90;
+        s = clamp(source.s, 28, 94);
+        l = clamp(source.l + (50 - source.l) * 0.25 + (fraction - 0.5) * 20, 14, 92);
+    }
+
     return { id: uid(), hex: hslToHex(h, s, l), locked: false };
   });
-}
 
+  // Keep selected seeds represented even when the palette has fewer slots than seeds.
+  // Count is always at least 3, and seeds are capped at 4.
+  return generated.map((color, index) => {
+    const lockedHex = locked[index];
+    return lockedHex && !seeds.includes(color.hex) ? { ...color, hex: lockedHex, locked: true } : color;
+  });
+}
 export function colorScale(hex: string, kind: "shades" | "tints" | "tones"): { label: string; hex: string }[] {
   const labels = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"];
   const rgb = hexToRgb(hex);
