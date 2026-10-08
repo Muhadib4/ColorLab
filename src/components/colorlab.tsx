@@ -119,7 +119,6 @@ export default function ColorLab({ palette, onChange, onGenerate, onSave, onExpo
   const [customCount, setCustomCount] = useState<string | null>(null);
   const [isCustomCount, setIsCustomCount] = useState(false);
   const [copiedColor, setCopiedColor] = useState<{ id: string; format: ColorFormat } | null>(null);
-  const [generatorColor, setGeneratorColor] = useState("#6366F1");
   const [showGeneratorColors, setShowGeneratorColors] = useState(false);
   const copyFeedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clampCount = (value: number) => Math.min(MAX_PALETTE_COLORS, Math.max(MIN_PALETTE_COLORS, Number.isFinite(value) ? Math.round(value) : MIN_PALETTE_COLORS));
@@ -151,7 +150,7 @@ export default function ColorLab({ palette, onChange, onGenerate, onSave, onExpo
   };
   const changeCount = (count: number) => {
     const nextCount = clampCount(count);
-    const colors = generatePalette(nextCount, palette.mode, palette.colors.map(color => ({ ...color, locked: true }))).map((color, index) => ({ ...color, locked: palette.colors[index]?.locked ?? false }));
+    const colors = generatePalette(nextCount, palette.mode, palette.colors, selectedSeeds).map((color, index) => ({ ...color, locked: palette.colors[index]?.locked ?? false }));
     onChange({ ...palette, colors });
   };
 
@@ -224,56 +223,67 @@ export default function ColorLab({ palette, onChange, onGenerate, onSave, onExpo
             aria-expanded={showGeneratorColors}
             onClick={() => setShowGeneratorColors(value => !value)}
           >
-            <span className="cl-generator-color-preview" style={{ background: generatorColor }} />
+            <span className="cl-generator-color-preview" style={{ background: selectedSeeds[0] ?? "#CBD5E1" }} />
             <span>
-              <small>COLOR SOURCE</small>
-              <strong>{colorName(generatorColor)}</strong>
+              <small>COLOR SEEDS</small>
+              <strong>{selectedSeeds.length ? `${selectedSeeds.length}/4 selected` : "No color selected"}</strong>
             </span>
-            <span className="mono">{generatorColor}</span>
+            <span className="mono">{selectedSeeds.length ? selectedSeeds.join(" · ") : "Optional"}</span>
           </button>
 
           {showGeneratorColors && (
             <div className="cl-generator-color-popover">
               <div className="cl-generator-color-head">
                 <div>
-                  <strong>Choose generator color</strong>
-                  <small>Generated palettes stay based on this color.</small>
+                  <strong>Choose generator colors</strong>
+                  <small>Pick up to 4 colors. Leave empty for a normal palette.</small>
                 </div>
                 <label className="cl-generator-custom">
                   <input
                     type="color"
-                    value={generatorColor}
-                    onChange={event => setGeneratorColor(event.target.value.toUpperCase())}
-                    aria-label="Choose custom generator color"
+                    value={selectedSeeds[0] ?? "#6366F1"}
+                    onChange={event => {
+                      const hex = event.target.value.toUpperCase();
+                      if (selectedSeeds.includes(hex)) return;
+                      if (selectedSeeds.length >= 4) { notify("You can use up to 4 seed colors.", "error"); return; }
+                      onSeedChange([...selectedSeeds, hex]);
+                    }}
+                    aria-label="Add custom generator color"
                   />
-                  <span>Custom</span>
+                  <span>Add custom</span>
                 </label>
               </div>
 
               <div className="cl-generator-color-grid">
-                {BASE_COLORS.map(color => (
-                  <button
+                {BASE_COLORS.map(color => {
+                  const selected = selectedSeeds.includes(color.hex);
+                  return <button
                     type="button"
                     key={color.id}
-                    className={`cl-generator-color-option ${generatorColor === color.hex ? "selected" : ""}`}
+                    className={`cl-generator-color-option ${selected ? "selected" : ""}`}
                     onClick={() => {
-                      setGeneratorColor(color.hex);
-                      setShowGeneratorColors(false);
+                      if (selected) onSeedChange(selectedSeeds.filter(hex => hex !== color.hex));
+                      else if (selectedSeeds.length < 4) onSeedChange([...selectedSeeds, color.hex]);
+                      else notify("You can use up to 4 seed colors.", "error");
                     }}
+                    aria-pressed={selected}
                   >
                     <span className="cl-generator-color-swatch" style={{ background: color.hex }} />
                     <span>
                       <strong>{color.name}</strong>
                       <small>{color.englishName}</small>
                     </span>
-                    <code>{color.hex}</code>
-                  </button>
-                ))}
+                    <code>{selected ? "SELECTED" : color.hex}</code>
+                  </button>;
+                })}
               </div>
+
+              {selectedSeeds.length > 0 && <button type="button" className="cl-subtle-button" onClick={() => onSeedChange([])}>
+                Clear all color seeds
+              </button>}
             </div>
           )}
-        </div>
-      </div>
+        </div>      </div>
 
       <div className="cl-generate-actions">
         <span className="cl-seed-status" title="Selected colors are used as generator seeds">
@@ -287,7 +297,7 @@ export default function ColorLab({ palette, onChange, onGenerate, onSave, onExpo
 
         <button
           className="button button-primary cl-generate"
-          onClick={() => onGenerate(generatorColor)}
+          onClick={() => onGenerate()}
         >
           <Sparkles size={16} />
           Generate palette
